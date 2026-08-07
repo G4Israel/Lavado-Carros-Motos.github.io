@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema Lavado de Carros y Motos</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+<style>
+  :root{
+    --petrol-950:#07262b;
+    --petrol-900:#0b333a;
+    --petrol-800:#123f47;
+    --petrol-700:#1a4f58;
+    --foam:#eaf7f6;
+    --foam-dim:#a9c9c8;
+    --aqua:#2dd4cf;
+    --aqua-dim:#1aa39f;
+    --soap:#ff8a3d;
+    --soap-dim:#e2691a;
+    --ready:#3ddc97;
+    --wait:#f4b740;
+    --queue:#7fa3a6;
+    --bs-body-color: var(--foam);
+    --bs-body-bg: var(--petrol-950);
+    --bs-heading-color: var(--foam);
+    --bs-border-color: var(--petrol-700);
+    --bs-secondary-color: var(--foam-dim);
+    --bs-form-label-color: var(--foam);
+    --bs-card-color: var(--foam);
+    --bs-card-cap-color: var(--foam);
+    --bs-modal-color: var(--foam);
+    --bs-table-color: var(--foam);
+    --bs-table-striped-color: var(--foam);
+    --bs-dropdown-color: var(--foam);
+  }
+  body, h1,h2,h3,h4,h5,h6, label, .form-label, .card-title, .modal-title{color:var(--foam)!important;}
+  body{background:radial-gradient(circle at 15% 0%, var(--petrol-800), var(--petrol-950) 60%);color:var(--foam);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;}
+  .navbar{background:var(--petrol-900);border-bottom:2px solid var(--aqua-dim);}
+  .navbar-brand{color:var(--foam)!important;letter-spacing:.02em;}
+  .navbar-brand i{color:var(--aqua);}
+  .card{background:var(--petrol-900);border:1px solid var(--petrol-700);border-radius:12px;}
+  .table{color:var(--foam);}
+  .table>:not(caption)>*>*{background:var(--petrol-900);color:var(--foam);border-color:var(--petrol-700);}
+  .table-hover>tbody>tr:hover>*{background:var(--petrol-800);}
+  .form-control,.form-select{background:var(--petrol-950);color:var(--foam);border-color:var(--petrol-700);}
+  .form-control:focus,.form-select:focus{background:var(--petrol-950);color:var(--foam);box-shadow:0 0 0 .2rem rgba(45,212,207,.25);border-color:var(--aqua);}
+  .form-control::placeholder{color:var(--foam-dim);}
+  .badge-espera{background:var(--queue);color:#0b2325;}
+  .badge-proceso{background:var(--wait);color:#3a2600;}
+  .badge-listo{background:var(--ready);color:#04291a;}
+  .nav-pills .nav-link{color:var(--foam-dim);border-radius:8px;}
+  .nav-pills .nav-link:hover{color:var(--foam);}
+  .nav-pills .nav-link.active{background:var(--soap);color:#3a1c00;font-weight:600;}
+  .tab-pane{display:none;} .tab-pane.active{display:block;}
+  .stat-card{border-left:4px solid var(--aqua);}
+  .stat-card.blue{border-left-color:#4fb8ff;}
+  .stat-card.yellow{border-left-color:var(--wait);}
+  .stat-card.purple{border-left-color:#c084fc;}
+  .btn-success{background:var(--soap);border-color:var(--soap);color:#3a1c00;font-weight:600;}
+  .btn-success:hover{background:var(--soap-dim);border-color:var(--soap-dim);color:#fff;}
+  .btn-danger{background:#e2445c;border-color:#e2445c;}
+  .btn-danger:hover{background:#c62f47;border-color:#c62f47;}
+  .btn-outline-light{color:var(--foam);border-color:var(--petrol-700);}
+  .btn-outline-light:hover{background:var(--aqua);border-color:var(--aqua);color:#04291a;}
+  .btn-outline-warning{color:var(--wait);border-color:var(--wait);}
+  .btn-outline-warning:hover{background:var(--wait);color:#3a2600;}
+  .btn-outline-success{color:var(--ready);border-color:var(--ready);}
+  .btn-outline-success:hover{background:var(--ready);color:#04291a;}
+  .btn-outline-danger{color:#e2445c;border-color:#e2445c;}
+  .btn-outline-danger:hover{background:#e2445c;color:#fff;}
+  a.btn-success{color:#04291a;}
+  .modal-content{background:var(--petrol-900);color:var(--foam);border:1px solid var(--petrol-700);}
+  .list-group-item{background:var(--petrol-950);color:var(--foam);border-color:var(--petrol-700);}
+  .progress{background:var(--petrol-950);}
+  .progress-bar.bg-success{background-color:var(--aqua)!important;}
+  .progress-bar.bg-info{background-color:var(--soap)!important;}
+  .fidelidad-bar{height:10px;}
+  .small-muted{color:var(--foam-dim);font-size:.85rem;}
+  .text-secondary{color:var(--foam-dim)!important;}
+  #loginScreen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 15% 0%, var(--petrol-800), var(--petrol-950) 60%);z-index:2000;}
+  #loginScreen .card{width:100%;max-width:360px;}
+  #appContainer{display:none;}
+  .perm-check{display:flex;align-items:center;gap:8px;padding:4px 0;}
+  .user-row{border-bottom:1px solid var(--petrol-700);padding:10px 0;}
+</style>
+</head>
+<body>
+
+<!-- ================= LOGIN ================= -->
+<div id="loginScreen">
+  <div class="card p-4">
+    <h5 class="mb-1 text-center"><i class="fa-solid fa-car-side me-2"></i>Lavado Carros & Motos</h5>
+    <p class="small-muted text-center mb-3">Inicia sesión para continuar</p>
+    <form id="formLogin">
+      <div class="mb-2">
+        <label class="form-label small">Correo</label>
+        <input type="email" class="form-control" id="loginEmail" required autocomplete="username">
+      </div>
+      <div class="mb-2">
+        <label class="form-label small">Contraseña</label>
+        <input type="password" class="form-control" id="loginPass" required autocomplete="current-password">
+      </div>
+      <div id="loginError" class="text-danger small mb-2" style="display:none;"></div>
+      <button class="btn btn-success w-100 mt-2"><i class="fa-solid fa-right-to-bracket me-1"></i>Entrar</button>
+    </form>
+  </div>
+</div>
+
+<div id="appContainer">
+
+<nav class="navbar navbar-dark px-3 mb-4">
+  <span class="navbar-brand mb-0 h1"><i class="fa-solid fa-car-side me-2"></i>Lavado Carros & Motos</span>
+  <span class="d-flex align-items-center gap-3">
+    <span id="fechaHoy" class="text-secondary"></span>
+    <span id="userBadge" class="text-secondary small"></span>
+    <button class="btn btn-sm btn-outline-light" onclick="auth.signOut()"><i class="fa-solid fa-right-from-bracket me-1"></i>Salir</button>
+  </span>
+</nav>
+
+<div class="container-fluid px-4 pb-5">
+
+  <ul class="nav nav-pills mb-4 gap-2" id="tabs">
+    <li class="nav-item"><button class="nav-link active" data-tab="dashboard"><i class="fa-solid fa-gauge me-1"></i>Panel</button></li>
+    <li class="nav-item"><button class="nav-link" data-tab="clientes"><i class="fa-solid fa-users me-1"></i>Clientes</button></li>
+    <li class="nav-item"><button class="nav-link" data-tab="servicios"><i class="fa-solid fa-list-check me-1"></i>Servicios</button></li>
+    <li class="nav-item"><button class="nav-link" data-tab="fidelidad"><i class="fa-solid fa-star me-1"></i>Fidelidad</button></li>
+    <li class="nav-item"><button class="nav-link" data-tab="recordatorios"><i class="fa-brands fa-whatsapp me-1"></i>Recordatorios</button></li>
+    <li class="nav-item"><button class="nav-link" data-tab="reportes"><i class="fa-solid fa-chart-column me-1"></i>Reportes</button></li>
+    <li class="nav-item" id="navUsuarios" style="display:none;"><button class="nav-link" data-tab="usuarios"><i class="fa-solid fa-user-shield me-1"></i>Usuarios</button></li>
+  </ul>
+
+  <!-- ================= DASHBOARD ================= -->
+  <div class="tab-pane active" id="tab-dashboard">
+    <div class="row g-3 mb-4">
+      <div class="col-md-3"><div class="card stat-card p-3"><div class="text-secondary small">Ingresos de hoy</div><div class="fs-3 fw-bold" id="totalHoy">$0.00</div></div></div>
+      <div class="col-md-3"><div class="card stat-card blue p-3"><div class="text-secondary small">Lavados de hoy</div><div class="fs-3 fw-bold" id="cantHoy">0</div></div></div>
+      <div class="col-md-3"><div class="card stat-card yellow p-3"><div class="text-secondary small">En proceso</div><div class="fs-3 fw-bold" id="enProceso">0</div></div></div>
+      <div class="col-md-3"><div class="card p-3 d-flex justify-content-center"><button class="btn btn-danger" onclick="abrirCierre()"><i class="fa-solid fa-lock me-1"></i>Cerrar caja</button></div></div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <div class="card p-3">
+          <h5 class="mb-3"><i class="fa-solid fa-plus me-2"></i>Nuevo lavado</h5>
+          <form id="formLavado">
+            <div class="mb-2">
+              <label class="form-label small">Cliente</label>
+              <input type="text" class="form-control" id="clienteInput" list="listaClientes" placeholder="Nombre o placa" required>
+              <datalist id="listaClientes"></datalist>
+            </div>
+            <div class="mb-2">
+              <label class="form-label small">Placa</label>
+              <input type="text" class="form-control text-uppercase" id="placa" required>
+            </div>
+            <div class="mb-2">
+              <label class="form-label small">Modelo</label>
+              <input type="text" class="form-control" id="modelo">
+            </div>
+            <div class="mb-2">
+              <label class="form-label small">Teléfono</label>
+              <input type="text" class="form-control" id="telefono">
+            </div>
+            <div class="row g-2 mb-2">
+              <div class="col-6">
+                <label class="form-label small">Vehículo</label>
+                <select class="form-select" id="tipoVehiculo"><option value="carro">Carro</option><option value="moto">Moto</option></select>
+              </div>
+              <div class="col-6">
+                <label class="form-label small">Servicio</label>
+                <select class="form-select" id="servicioSelect"></select>
+              </div>
+            </div>
+            <div class="row g-2 mb-2">
+              <div class="col-6">
+                <label class="form-label small">Empleado</label>
+                <input type="text" class="form-control" id="empleado">
+              </div>
+              <div class="col-6">
+                <label class="form-label small">Precio ($)</label>
+                <input type="number" step="0.01" class="form-control" id="precio" required>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small">Método de pago</label>
+              <select class="form-select" id="metodoPago"><option value="efectivo">Efectivo</option><option value="transferencia">Transferencia</option></select>
+            </div>
+            <button class="btn btn-success w-100"><i class="fa-solid fa-check me-1"></i>Registrar lavado</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="col-lg-8">
+        <div class="card p-3">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0"><i class="fa-solid fa-list me-2"></i>Lavados de hoy</h5>
+            <input type="text" class="form-control form-control-sm w-auto" placeholder="Buscar placa o cliente..." id="buscador" oninput="renderDashboard()">
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead><tr><th>Hora</th><th>Cliente</th><th>Placa</th><th>Tipo</th><th>Servicio</th><th>Empleado</th><th>Pago</th><th>Precio</th><th>Estado</th><th></th></tr></thead>
+              <tbody id="tablaBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= CLIENTES ================= -->
+  <div class="tab-pane" id="tab-clientes">
+    <div class="card p-3">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0"><i class="fa-solid fa-users me-2"></i>Clientes registrados</h5>
+        <input type="text" class="form-control form-control-sm w-auto" placeholder="Buscar..." id="buscadorClientes" oninput="renderClientes()">
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead><tr><th>Nombre</th><th>Teléfono</th><th>Placas / Modelos</th><th>Lavados</th><th>Último lavado</th><th></th></tr></thead>
+          <tbody id="tablaClientes"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= SERVICIOS ================= -->
+  <div class="tab-pane" id="tab-servicios">
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <div class="card p-3">
+          <h5 class="mb-3"><i class="fa-solid fa-plus me-2"></i>Nuevo servicio</h5>
+          <form id="formServicio">
+            <div class="mb-2"><label class="form-label small">Nombre</label><input type="text" class="form-control" id="servNombre" required></div>
+            <div class="mb-2"><label class="form-label small">Precio carro ($)</label><input type="number" step="0.01" class="form-control" id="servPrecioCarro" required></div>
+            <div class="mb-3"><label class="form-label small">Precio moto ($)</label><input type="number" step="0.01" class="form-control" id="servPrecioMoto" required></div>
+            <button class="btn btn-success w-100">Agregar</button>
+          </form>
+        </div>
+      </div>
+      <div class="col-lg-8">
+        <div class="card p-3">
+          <h5 class="mb-3"><i class="fa-solid fa-list-check me-2"></i>Catálogo de servicios</h5>
+          <div class="table-responsive">
+            <table class="table align-middle">
+              <thead><tr><th>Servicio</th><th>Precio carro</th><th>Precio moto</th><th></th></tr></thead>
+              <tbody id="tablaServicios"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= FIDELIDAD ================= -->
+  <div class="tab-pane" id="tab-fidelidad">
+    <div class="card p-3">
+      <h5 class="mb-1"><i class="fa-solid fa-star me-2"></i>Tarjeta de fidelidad</h5>
+      <p class="small-muted mb-3">Cada 10mo lavado es gratis. La barra muestra el progreso de cada cliente hacia su próximo lavado gratis.</p>
+      <div id="listaFidelidad"></div>
+    </div>
+  </div>
+
+  <!-- ================= RECORDATORIOS ================= -->
+  <div class="tab-pane" id="tab-recordatorios">
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <div class="card p-3">
+          <h5 class="mb-1"><i class="fa-brands fa-whatsapp me-2 text-success"></i>Vehículos listos hoy</h5>
+          <p class="small-muted mb-3">Envía un WhatsApp avisando que el vehículo está listo.</p>
+          <div id="listaListos"><p class="small-muted">No hay vehículos listos pendientes de aviso.</p></div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="card p-3">
+          <h5 class="mb-1"><i class="fa-brands fa-whatsapp me-2 text-warning"></i>Clientes inactivos (+20 días)</h5>
+          <p class="small-muted mb-3">Recuérdales que ya pueden volver a lavar su vehículo.</p>
+          <div id="listaInactivos"><p class="small-muted">Cargando...</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= REPORTES ================= -->
+  <div class="tab-pane" id="tab-reportes">
+    <div class="card p-3 mb-4">
+      <div class="d-flex gap-2 align-items-end flex-wrap">
+        <div><label class="form-label small">Rango</label>
+          <select class="form-select" id="rangoReporte" onchange="renderReportes()">
+            <option value="semana">Esta semana</option>
+            <option value="mes">Este mes</option>
+            <option value="30">Últimos 30 días</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="row g-3 mb-4">
+      <div class="col-md-4"><div class="card stat-card p-3"><div class="text-secondary small">Ingresos del periodo</div><div class="fs-3 fw-bold" id="repIngresos">$0.00</div></div></div>
+      <div class="col-md-4"><div class="card stat-card purple p-3"><div class="text-secondary small">Servicio más vendido</div><div class="fs-5 fw-bold" id="repServicioTop">-</div></div></div>
+      <div class="col-md-4"><div class="card stat-card blue p-3"><div class="text-secondary small">Empleado más productivo</div><div class="fs-5 fw-bold" id="repEmpleadoTop">-</div></div></div>
+    </div>
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <div class="card p-3">
+          <h6 class="mb-3">Ingresos por servicio</h6>
+          <div id="barsServicio"></div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="card p-3">
+          <h6 class="mb-3">Ingresos por empleado</h6>
+          <div id="barsEmpleado"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= USUARIOS (solo admin) ================= -->
+  <div class="tab-pane" id="tab-usuarios">
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <div class="card p-3">
+          <h5 class="mb-3"><i class="fa-solid fa-user-plus me-2"></i>Nuevo usuario</h5>
+          <form id="formUsuario">
+            <div class="mb-2"><label class="form-label small">Nombre</label><input type="text" class="form-control" id="usrNombre" required></div>
+            <div class="mb-2"><label class="form-label small">Correo</label><input type="email" class="form-control" id="usrEmail" required></div>
+            <div class="mb-2"><label class="form-label small">Contraseña (mín. 6 caracteres)</label><input type="password" class="form-control" id="usrPass" required minlength="6"></div>
+            <label class="form-label small mt-2">Acceso a pestañas</label>
+            <div class="perm-check"><input type="checkbox" id="permPanel" checked><label for="permPanel">Panel</label></div>
+            <div class="perm-check"><input type="checkbox" id="permClientes" checked><label for="permClientes">Clientes</label></div>
+            <div class="perm-check"><input type="checkbox" id="permServicios"><label for="permServicios">Servicios</label></div>
+            <div class="perm-check"><input type="checkbox" id="permFidelidad" checked><label for="permFidelidad">Fidelidad</label></div>
+            <div class="perm-check"><input type="checkbox" id="permRecordatorios" checked><label for="permRecordatorios">Recordatorios</label></div>
+            <div class="perm-check"><input type="checkbox" id="permReportes"><label for="permReportes">Reportes</label></div>
+            <button class="btn btn-success w-100 mt-3">Crear usuario</button>
+          </form>
+        </div>
+      </div>
+      <div class="col-lg-8">
+        <div class="card p-3">
+          <h5 class="mb-3"><i class="fa-solid fa-users-gear me-2"></i>Usuarios del sistema</h5>
+          <p class="small-muted">Marca o desmarca casillas para cambiar el acceso de cada empleado. "Activo" desactivado bloquea su entrada al sistema.</p>
+          <div id="listaUsuarios"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</div><!-- /appContainer -->
+
+<!-- Modal historial cliente -->
+<div class="modal fade" id="modalHistorial" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title" id="histTitulo">Historial</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body"><div id="histBody"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal cierre de caja -->
+<div class="modal fade" id="modalCierre" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Cierre de caja del día</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body" id="cierreBody"></div>
+      <div class="modal-footer"><button class="btn btn-danger" onclick="confirmarCierre()">Confirmar cierre</button></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+// ⚠️ Reemplaza con tu configuración real de Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyAT4F0qUq07P2TpL28ZkYZYzLF6klPIee8",
+    authDomain: "lavado-carros-y-motos.firebaseapp.com",
+    projectId: "lavado-carros-y-motos",
+    storageBucket: "lavado-carros-y-motos.firebasestorage.app",
+    messagingSenderId: "645387078241",
+    appId: "1:645387078241:web:ca2229e9c9be1974d77820",
+    measurementId: "G-JKKFFXSV92"
+  };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const auth = firebase.auth();
+
+const hoyStr = () => new Date().toISOString().slice(0,10);
+document.getElementById('fechaHoy').textContent = new Date().toLocaleDateString('es-EC', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+
+// ---------- LOGIN ----------
+let currentUid = null, currentRol = null, currentPermisos = {};
+let listenersIniciados = false;
+
+document.getElementById('formLogin').addEventListener('submit', e=>{
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const err = document.getElementById('loginError');
+  err.style.display = 'none';
+  auth.signInWithEmailAndPassword(email, pass).catch(error=>{
+    err.textContent = 'Correo o contraseña incorrectos.';
+    err.style.display = 'block';
+  });
+});
+
+auth.onAuthStateChanged(user=>{
+  if(user){
+    currentUid = user.uid;
+    db.ref('usuarios/'+user.uid).once('value').then(snap=>{
+      const datos = snap.val();
+      if(!datos || datos.activo===false){
+        alert('Tu cuenta no tiene acceso configurado o fue desactivada. Contacta al administrador.');
+        auth.signOut();
+        return;
+      }
+      currentRol = datos.rol;
+      currentPermisos = datos.permisos || {};
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('appContainer').style.display = 'block';
+      document.getElementById('userBadge').textContent = (datos.nombre || user.email) + (currentRol==='admin' ? ' · Admin' : '');
+      document.getElementById('loginPass').value = '';
+      aplicarPermisos();
+      if(!listenersIniciados){ iniciarListenersDatos(); listenersIniciados = true; }
+    }).catch(()=>{
+      alert('No se pudo verificar tu acceso. Revisa tu conexión e intenta de nuevo.');
+      auth.signOut();
+    });
+  } else {
+    currentUid = null; currentRol = null; currentPermisos = {};
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('appContainer').style.display = 'none';
+  }
+});
+
+function aplicarPermisos(){
+  const mapa = {panel:'panel', clientes:'clientes', servicios:'servicios', fidelidad:'fidelidad', recordatorios:'recordatorios', reportes:'reportes'};
+  document.querySelectorAll('#tabs > li[class="nav-item"]').forEach(li=>{}); // no-op, keep structure
+  document.querySelectorAll('#tabs .nav-link[data-tab]').forEach(btn=>{
+    const tab = btn.dataset.tab;
+    if(tab==='usuarios') return;
+    const li = btn.closest('li');
+    const permitido = currentRol==='admin' || currentPermisos[mapa[tab]]===true;
+    li.style.display = permitido ? '' : 'none';
+  });
+  document.getElementById('navUsuarios').style.display = currentRol==='admin' ? '' : 'none';
+
+  // si la pestaña activa quedó oculta, salta a la primera visible
+  const activa = document.querySelector('#tabs .nav-link.active');
+  const activaLi = activa ? activa.closest('li') : null;
+  if(!activaLi || activaLi.style.display==='none'){
+    const primeraVisible = Array.from(document.querySelectorAll('#tabs .nav-link[data-tab]')).find(b=>b.closest('li').style.display!=='none');
+    if(primeraVisible) primeraVisible.click();
+  }
+}
+
+// ---------- TABS ----------
+document.querySelectorAll('#tabs .nav-link').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#tabs .nav-link').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+    if(btn.dataset.tab==='reportes') renderReportes();
+    if(btn.dataset.tab==='recordatorios') renderRecordatorios();
+    if(btn.dataset.tab==='usuarios') renderUsuarios();
+  });
+});
+
+// ---------- GESTIÓN DE USUARIOS (solo admin) ----------
+document.getElementById('formUsuario').addEventListener('submit', e=>{
+  e.preventDefault();
+  const nombre = document.getElementById('usrNombre').value.trim();
+  const email = document.getElementById('usrEmail').value.trim();
+  const pass = document.getElementById('usrPass').value;
+  const permisos = {
+    panel: document.getElementById('permPanel').checked,
+    clientes: document.getElementById('permClientes').checked,
+    servicios: document.getElementById('permServicios').checked,
+    fidelidad: document.getElementById('permFidelidad').checked,
+    recordatorios: document.getElementById('permRecordatorios').checked,
+    reportes: document.getElementById('permReportes').checked
+  };
+  // App secundaria: crea el usuario sin cerrar la sesión del admin actual
+  const secundaria = firebase.apps.find(a=>a.name==='Secundaria') || firebase.initializeApp(firebaseConfig, 'Secundaria');
+  secundaria.auth().createUserWithEmailAndPassword(email, pass).then(cred=>{
+    return db.ref('usuarios/'+cred.user.uid).set({nombre, email, rol:'empleado', activo:true, permisos});
+  }).then(()=>{
+    return secundaria.auth().signOut();
+  }).then(()=>{
+    alert('Usuario creado correctamente.');
+    e.target.reset();
+    document.getElementById('permPanel').checked = true;
+    document.getElementById('permClientes').checked = true;
+    document.getElementById('permFidelidad').checked = true;
+    document.getElementById('permRecordatorios').checked = true;
+  }).catch(err=>{
+    alert('Error al crear usuario: ' + err.message);
+  });
+});
+
+function renderUsuarios(){
+  const cont = document.getElementById('listaUsuarios');
+  db.ref('usuarios').on('value', snap=>{
+    const usuarios = snap.val() || {};
+    cont.innerHTML = '';
+    const entries = Object.entries(usuarios);
+    if(!entries.length){ cont.innerHTML = '<p class="small-muted">No hay usuarios registrados aún.</p>'; return; }
+    entries.forEach(([uid, u])=>{
+      const p = u.permisos || {};
+      const esYoMismo = uid === currentUid;
+      const fila = document.createElement('div');
+      fila.className = 'user-row';
+      fila.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div><strong>${u.nombre||'-'}</strong> <span class="small-muted">${u.email||''}</span> ${u.rol==='admin'?'<span class="badge bg-warning text-dark ms-1">Admin</span>':''}</div>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" ${u.activo!==false?'checked':''} ${esYoMismo?'disabled':''}
+              onchange="db.ref('usuarios/${uid}/activo').set(this.checked)">
+            <label class="small-muted small">Activo</label>
+          </div>
+        </div>
+        ${u.rol==='admin' ? '<span class="small-muted">Acceso total (administrador)</span>' : `
+        <div class="d-flex flex-wrap gap-3">
+          ${['panel','clientes','servicios','fidelidad','recordatorios','reportes'].map(t=>`
+            <div class="perm-check">
+              <input type="checkbox" id="p_${uid}_${t}" ${p[t]?'checked':''}
+                onchange="db.ref('usuarios/${uid}/permisos/${t}').set(this.checked)">
+              <label for="p_${uid}_${t}" class="small text-capitalize">${t}</label>
+            </div>`).join('')}
+        </div>`}
+      `;
+      cont.appendChild(fila);
+    });
+  });
+}
+
+// ---------- STATE ----------
+let lavadosHoy = {};
+let clientes = {};
+let servicios = {};
+let todosLosLavados = {}; // fecha -> {id:lavado}
+
+// ---------- LISTENERS (arrancan solo tras iniciar sesión) ----------
+function iniciarListenersDatos(){
+  db.ref('servicios').on('value', snap=>{
+    servicios = snap.val() || {};
+    if(Object.keys(servicios).length===0){
+      const base = {
+        s1:{nombre:'Básico', precioCarro:5, precioMoto:3},
+        s2:{nombre:'Completo', precioCarro:8, precioMoto:5},
+        s3:{nombre:'Encerado', precioCarro:15, precioMoto:8},
+        s4:{nombre:'Motor', precioCarro:10, precioMoto:6}
+      };
+      db.ref('servicios').set(base);
+      return;
+    }
+    renderServiciosSelect();
+    renderServicios();
+  });
+
+  db.ref('clientes').on('value', snap=>{
+    clientes = snap.val() || {};
+    renderClientes();
+    renderClientesDatalist();
+    renderFidelidad();
+  });
+
+  db.ref('lavados/'+hoyStr()).on('value', snap=>{
+    lavadosHoy = snap.val() || {};
+    renderDashboard();
+  });
+}
+
+function renderServiciosSelect(){
+  const sel = document.getElementById('servicioSelect');
+  sel.innerHTML = '';
+  Object.entries(servicios).forEach(([id,s])=>{
+    sel.innerHTML += `<option value="${id}">${s.nombre}</option>`;
+  });
+  autoPrecio();
+}
+function autoPrecio(){
+  const id = document.getElementById('servicioSelect').value;
+  const tipo = document.getElementById('tipoVehiculo').value;
+  const s = servicios[id];
+  if(s) document.getElementById('precio').value = tipo==='carro' ? s.precioCarro : s.precioMoto;
+}
+document.getElementById('tipoVehiculo').addEventListener('change', autoPrecio);
+document.getElementById('servicioSelect').addEventListener('change', autoPrecio);
+
+document.getElementById('formServicio').addEventListener('submit', e=>{
+  e.preventDefault();
+  db.ref('servicios').push({
+    nombre: document.getElementById('servNombre').value,
+    precioCarro: parseFloat(document.getElementById('servPrecioCarro').value),
+    precioMoto: parseFloat(document.getElementById('servPrecioMoto').value)
+  });
+  e.target.reset();
+});
+
+function renderServicios(){
+  const tbody = document.getElementById('tablaServicios');
+  tbody.innerHTML = '';
+  Object.entries(servicios).forEach(([id,s])=>{
+    tbody.innerHTML += `<tr>
+      <td>${s.nombre}</td><td>$${Number(s.precioCarro).toFixed(2)}</td><td>$${Number(s.precioMoto).toFixed(2)}</td>
+      <td><button class="btn btn-sm btn-outline-danger" onclick="db.ref('servicios/${id}').remove()"><i class="fa-solid fa-trash"></i></button></td>
+    </tr>`;
+  });
+}
+
+// ---------- CLIENTES ----------
+function renderClientesDatalist(){
+  const dl = document.getElementById('listaClientes');
+  dl.innerHTML = '';
+  Object.values(clientes).forEach(c=>{ dl.innerHTML += `<option value="${c.nombre}">`; });
+}
+
+function buscarOcrearCliente(nombre, telefono, placa, modelo, tipo){
+  let id = Object.keys(clientes).find(k => clientes[k].nombre.toLowerCase()===nombre.toLowerCase());
+  const placas = id ? (clientes[id].placas||{}) : {};
+  placas[placa] = {placa, modelo, tipo};
+  if(id){
+    db.ref('clientes/'+id).update({telefono: telefono||clientes[id].telefono||'', placas});
+    return id;
+  } else {
+    const ref = db.ref('clientes').push();
+    ref.set({nombre, telefono: telefono||'', placas});
+    return ref.key;
+  }
+}
+
+function renderClientes(){
+  const filtro = (document.getElementById('buscadorClientes').value||'').toLowerCase();
+  const tbody = document.getElementById('tablaClientes');
+  tbody.innerHTML = '';
+  Object.entries(clientes).forEach(([id,c])=>{
+    if(filtro && !(`${c.nombre} ${Object.keys(c.placas||{}).join(' ')}`.toLowerCase().includes(filtro))) return;
+    const placasTxt = Object.values(c.placas||{}).map(p=>`${p.placa} (${p.modelo||'-'})`).join(', ') || '-';
+    const hist = c.historial ? Object.values(c.historial) : [];
+    const cant = hist.length;
+    const ultimo = cant ? new Date(Math.max(...hist.map(h=>h.ts))).toLocaleDateString('es-EC') : '-';
+    tbody.innerHTML += `<tr>
+      <td>${c.nombre}</td><td>${c.telefono||'-'}</td><td class="small-muted">${placasTxt}</td>
+      <td>${cant}</td><td>${ultimo}</td>
+      <td><button class="btn btn-sm btn-outline-light" onclick="verHistorial('${id}')"><i class="fa-solid fa-clock-rotate-left"></i></button></td>
+    </tr>`;
+  });
+}
+
+function verHistorial(id){
+  const c = clientes[id];
+  document.getElementById('histTitulo').textContent = 'Historial de ' + c.nombre;
+  const hist = c.historial ? Object.values(c.historial).sort((a,b)=>b.ts-a.ts) : [];
+  let html = hist.length ? '<div class="list-group">' : '<p class="small-muted">Sin lavados registrados aún.</p>';
+  hist.forEach(h=>{
+    html += `<div class="list-group-item d-flex justify-content-between">
+      <span>${new Date(h.ts).toLocaleDateString('es-EC')} — ${h.servicio} (${h.placa})</span>
+      <span>$${Number(h.precio).toFixed(2)}</span>
+    </div>`;
+  });
+  if(hist.length) html += '</div>';
+  document.getElementById('histBody').innerHTML = html;
+  new bootstrap.Modal(document.getElementById('modalHistorial')).show();
+}
+
+// ---------- LAVADOS DE HOY ----------
+document.getElementById('formLavado').addEventListener('submit', e=>{
+  e.preventDefault();
+  const nombre = document.getElementById('clienteInput').value;
+  const telefono = document.getElementById('telefono').value;
+  const placa = document.getElementById('placa').value.toUpperCase();
+  const modelo = document.getElementById('modelo').value;
+  const tipo = document.getElementById('tipoVehiculo').value;
+  const servicioId = document.getElementById('servicioSelect').value;
+  const servicioNombre = servicios[servicioId] ? servicios[servicioId].nombre : '-';
+  const clienteId = buscarOcrearCliente(nombre, telefono, placa, modelo, tipo);
+
+  const nuevo = {
+    hora: new Date().toLocaleTimeString('es-EC', {hour:'2-digit',minute:'2-digit'}),
+    ts: Date.now(),
+    clienteId, cliente: nombre, placa, modelo, tipo,
+    servicio: servicioNombre,
+    empleado: document.getElementById('empleado').value || '-',
+    precio: parseFloat(document.getElementById('precio').value),
+    metodoPago: document.getElementById('metodoPago').value,
+    estado: 'espera',
+    avisado: false
+  };
+  const ref = db.ref('lavados/'+hoyStr()).push();
+  ref.set(nuevo);
+  db.ref(`clientes/${clienteId}/historial/${ref.key}`).set(nuevo);
+
+  e.target.reset();
+  renderServiciosSelect();
+});
+
+function cambiarEstado(id, estado){
+  db.ref('lavados/'+hoyStr()+'/'+id).update({estado});
+  if(lavadosHoy[id]?.clienteId){
+    db.ref(`clientes/${lavadosHoy[id].clienteId}/historial/${id}`).update({estado});
+  }
+}
+function eliminarLavado(id){
+  if(!confirm('¿Eliminar este registro?')) return;
+  const cId = lavadosHoy[id]?.clienteId;
+  db.ref('lavados/'+hoyStr()+'/'+id).remove();
+  if(cId) db.ref(`clientes/${cId}/historial/${id}`).remove();
+}
+
+function renderDashboard(){
+  const filtro = (document.getElementById('buscador').value||'').toLowerCase();
+  const tbody = document.getElementById('tablaBody');
+  tbody.innerHTML = '';
+  const entries = Object.entries(lavadosHoy).sort((a,b)=>b[1].ts-a[1].ts);
+  let total=0, enProceso=0;
+  entries.forEach(([id,l])=>{
+    total += Number(l.precio||0);
+    if(l.estado==='proceso') enProceso++;
+    if(filtro && !(`${l.placa} ${l.cliente}`.toLowerCase().includes(filtro))) return;
+    const badge = l.estado==='espera'?'badge-espera':l.estado==='proceso'?'badge-proceso':'badge-listo';
+    const texto = l.estado==='espera'?'En espera':l.estado==='proceso'?'En proceso':'Listo';
+    tbody.innerHTML += `<tr>
+      <td>${l.hora}</td><td>${l.cliente}</td><td>${l.placa}</td><td>${l.tipo==='carro'?'🚗':'🏍️'}</td>
+      <td>${l.servicio}</td><td>${l.empleado}</td><td class="small-muted">${l.metodoPago}</td>
+      <td>$${Number(l.precio).toFixed(2)}</td>
+      <td><span class="badge ${badge}">${texto}</span></td>
+      <td><div class="btn-group btn-group-sm">
+        <button class="btn btn-outline-warning" onclick="cambiarEstado('${id}','proceso')" title="En proceso"><i class="fa-solid fa-hourglass-half"></i></button>
+        <button class="btn btn-outline-success" onclick="cambiarEstado('${id}','listo')" title="Listo"><i class="fa-solid fa-check"></i></button>
+        <button class="btn btn-outline-danger" onclick="eliminarLavado('${id}')" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+      </div></td>
+    </tr>`;
+  });
+  document.getElementById('totalHoy').textContent = '$'+total.toFixed(2);
+  document.getElementById('cantHoy').textContent = entries.length;
+  document.getElementById('enProceso').textContent = enProceso;
+}
+
+// ---------- CAJA / CIERRE ----------
+function abrirCierre(){
+  const efectivo = Object.values(lavadosHoy).filter(l=>l.metodoPago==='efectivo').reduce((s,l)=>s+Number(l.precio),0);
+  const transferencia = Object.values(lavadosHoy).filter(l=>l.metodoPago==='transferencia').reduce((s,l)=>s+Number(l.precio),0);
+  const total = efectivo+transferencia;
+  document.getElementById('cierreBody').innerHTML = `
+    <p>Cantidad de lavados: <strong>${Object.keys(lavadosHoy).length}</strong></p>
+    <p>Efectivo: <strong>$${efectivo.toFixed(2)}</strong></p>
+    <p>Transferencia: <strong>$${transferencia.toFixed(2)}</strong></p>
+    <hr><p class="fs-5">Total: <strong>$${total.toFixed(2)}</strong></p>`;
+  new bootstrap.Modal(document.getElementById('modalCierre')).show();
+}
+function confirmarCierre(){
+  const efectivo = Object.values(lavadosHoy).filter(l=>l.metodoPago==='efectivo').reduce((s,l)=>s+Number(l.precio),0);
+  const transferencia = Object.values(lavadosHoy).filter(l=>l.metodoPago==='transferencia').reduce((s,l)=>s+Number(l.precio),0);
+  db.ref('cierres/'+hoyStr()).set({
+    fecha: hoyStr(), efectivo, transferencia, total: efectivo+transferencia,
+    cantidad: Object.keys(lavadosHoy).length, cerradoEn: Date.now()
+  });
+  bootstrap.Modal.getInstance(document.getElementById('modalCierre')).hide();
+  alert('Caja cerrada y guardada en historial.');
+}
+
+// ---------- FIDELIDAD ----------
+function renderFidelidad(){
+  const cont = document.getElementById('listaFidelidad');
+  cont.innerHTML = '';
+  const entries = Object.entries(clientes);
+  if(!entries.length){ cont.innerHTML = '<p class="small-muted">Aún no hay clientes registrados.</p>'; return; }
+  entries.forEach(([id,c])=>{
+    const cant = c.historial ? Object.keys(c.historial).length : 0;
+    const enCiclo = cant % 10;
+    const pct = (enCiclo/10)*100;
+    const gratisDisponible = cant>0 && enCiclo===0;
+    cont.innerHTML += `<div class="mb-3">
+      <div class="d-flex justify-content-between">
+        <span>${c.nombre} <span class="small-muted">(${cant} lavados)</span></span>
+        ${gratisDisponible ? '<span class="badge bg-success">🎉 Lavado gratis disponible</span>' : `<span class="small-muted">${enCiclo}/10</span>`}
+      </div>
+      <div class="progress fidelidad-bar"><div class="progress-bar bg-success" style="width:${gratisDisponible?100:pct}%"></div></div>
+    </div>`;
+  });
+}
+
+// ---------- RECORDATORIOS ----------
+function renderRecordatorios(){
+  // Listos hoy sin avisar
+  const listos = Object.entries(lavadosHoy).filter(([id,l])=>l.estado==='listo');
+  const contListos = document.getElementById('listaListos');
+  contListos.innerHTML = listos.length ? '' : '<p class="small-muted">No hay vehículos listos pendientes de aviso.</p>';
+  listos.forEach(([id,l])=>{
+    const tel = clientes[l.clienteId]?.telefono;
+    const msg = encodeURIComponent(`Hola ${l.cliente}! 🚗 Tu vehículo (${l.placa}) ya está listo. ¡Te esperamos para que lo recojas!`);
+    contListos.innerHTML += `<div class="d-flex justify-content-between align-items-center mb-2 p-2" style="background:#0f172a;border-radius:6px;">
+      <span>${l.cliente} — ${l.placa}</span>
+      ${tel ? `<a class="btn btn-sm btn-success" target="_blank" href="https://wa.me/${tel.replace(/\D/g,'')}?text=${msg}"><i class="fa-brands fa-whatsapp"></i> Avisar</a>` : '<span class="small-muted">Sin teléfono</span>'}
+    </div>`;
+  });
+
+  // Inactivos +20 días
+  const contInact = document.getElementById('listaInactivos');
+  contInact.innerHTML = '';
+  const hoy = Date.now();
+  const inactivos = Object.entries(clientes).map(([id,c])=>{
+    const hist = c.historial ? Object.values(c.historial) : [];
+    if(!hist.length) return null;
+    const ultimo = Math.max(...hist.map(h=>h.ts));
+    const dias = Math.floor((hoy-ultimo)/86400000);
+    return dias>=20 ? {id,c,dias} : null;
+  }).filter(Boolean).sort((a,b)=>b.dias-a.dias);
+
+  if(!inactivos.length){ contInact.innerHTML = '<p class="small-muted">No hay clientes inactivos por ahora.</p>'; return; }
+  inactivos.forEach(({c,dias})=>{
+    const msg = encodeURIComponent(`Hola ${c.nombre}! 👋 Ya van ${dias} días desde tu último lavado. ¿Te agendamos uno esta semana?`);
+    contInact.innerHTML += `<div class="d-flex justify-content-between align-items-center mb-2 p-2" style="background:#0f172a;border-radius:6px;">
+      <span>${c.nombre} <span class="small-muted">(${dias} días)</span></span>
+      ${c.telefono ? `<a class="btn btn-sm btn-success" target="_blank" href="https://wa.me/${c.telefono.replace(/\D/g,'')}?text=${msg}"><i class="fa-brands fa-whatsapp"></i> Recordar</a>` : '<span class="small-muted">Sin teléfono</span>'}
+    </div>`;
+  });
+}
+
+// ---------- REPORTES ----------
+function cargarTodosLosLavados(cb){
+  db.ref('lavados').once('value', snap=>{
+    todosLosLavados = snap.val() || {};
+    cb();
+  });
+}
+
+function renderReportes(){
+  cargarTodosLosLavados(()=>{
+    const rango = document.getElementById('rangoReporte').value;
+    const hoy = new Date();
+    let desde;
+    if(rango==='semana'){ desde = new Date(hoy); desde.setDate(hoy.getDate()-hoy.getDay()); desde.setHours(0,0,0,0); }
+    else if(rango==='mes'){ desde = new Date(hoy.getFullYear(), hoy.getMonth(), 1); }
+    else { desde = new Date(hoy.getTime()-30*86400000); }
+
+    let ingresos=0;
+    const porServicio={}, porEmpleado={};
+    Object.values(todosLosLavados).forEach(dia=>{
+      Object.values(dia).forEach(l=>{
+        if(l.ts >= desde.getTime()){
+          ingresos += Number(l.precio||0);
+          porServicio[l.servicio] = (porServicio[l.servicio]||0) + Number(l.precio||0);
+          porEmpleado[l.empleado] = (porEmpleado[l.empleado]||0) + Number(l.precio||0);
+        }
+      });
+    });
+
+    document.getElementById('repIngresos').textContent = '$'+ingresos.toFixed(2);
+    const topServ = Object.entries(porServicio).sort((a,b)=>b[1]-a[1])[0];
+    const topEmp = Object.entries(porEmpleado).sort((a,b)=>b[1]-a[1])[0];
+    document.getElementById('repServicioTop').textContent = topServ ? topServ[0] : '-';
+    document.getElementById('repEmpleadoTop').textContent = topEmp ? topEmp[0] : '-';
+
+    renderBars('barsServicio', porServicio);
+    renderBars('barsEmpleado', porEmpleado);
+  });
+}
+
+function renderBars(contId, data){
+  const cont = document.getElementById(contId);
+  cont.innerHTML = '';
+  const entries = Object.entries(data).sort((a,b)=>b[1]-a[1]);
+  if(!entries.length){ cont.innerHTML = '<p class="small-muted">Sin datos en este periodo.</p>'; return; }
+  const max = entries[0][1];
+  entries.forEach(([k,v])=>{
+    const pct = (v/max)*100;
+    cont.innerHTML += `<div class="mb-2">
+      <div class="d-flex justify-content-between small"><span>${k}</span><span>$${v.toFixed(2)}</span></div>
+      <div class="progress" style="height:8px;"><div class="progress-bar bg-info" style="width:${pct}%"></div></div>
+    </div>`;
+  });
+}
+</script>
+</body>
+</html>
