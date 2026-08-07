@@ -438,7 +438,7 @@ auth.onAuthStateChanged(user=>{
 });
 
 function aplicarPermisos(){
-  const mapa = {panel:'panel', clientes:'clientes', servicios:'servicios', fidelidad:'fidelidad', recordatorios:'recordatorios', reportes:'reportes'};
+  const mapa = {dashboard:'panel', clientes:'clientes', servicios:'servicios', fidelidad:'fidelidad', recordatorios:'recordatorios', reportes:'reportes'};
   document.querySelectorAll('#tabs > li[class="nav-item"]').forEach(li=>{}); // no-op, keep structure
   document.querySelectorAll('#tabs .nav-link[data-tab]').forEach(btn=>{
     const tab = btn.dataset.tab;
