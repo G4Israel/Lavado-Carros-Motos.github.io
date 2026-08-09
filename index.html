@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Sistema Lavado de Carros y Motos</title>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
@@ -83,6 +83,43 @@
   #appContainer{display:none;}
   .perm-check{display:flex;align-items:center;gap:8px;padding:4px 0;}
   .user-row{border-bottom:1px solid var(--petrol-700);padding:10px 0;}
+
+  /* ---------- header con buscador: apilado en móvil, en línea desde sm ---------- */
+  .header-search{display:flex;flex-direction:column;align-items:stretch;gap:8px;}
+  .header-search input{width:100%;}
+  @media (min-width:576px){
+    .header-search{flex-direction:row;align-items:center;justify-content:space-between;}
+    .header-search input{width:auto;}
+  }
+
+  /* ---------- pestañas: barra deslizable tipo chips en móvil ---------- */
+  #tabs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  #tabs::-webkit-scrollbar{display:none;}
+  #tabs .nav-item{flex-shrink:0;}
+  #tabs .nav-link{white-space:nowrap;}
+
+  /* ================= AJUSTES MÓVIL ================= */
+  html{-webkit-text-size-adjust:100%;}
+  body{padding-bottom:env(safe-area-inset-bottom);}
+  @media (max-width:767.98px){
+    .navbar{flex-wrap:wrap;row-gap:8px;padding-top:.75rem;padding-bottom:.75rem;padding-left:14px;padding-right:14px;padding-top:calc(.75rem + env(safe-area-inset-top));}
+    .navbar-brand{font-size:1rem;}
+    .navbar #fechaHoy{display:none;}
+    .container-fluid{padding-left:14px;padding-right:14px;}
+    #tabs{margin-left:-14px;margin-right:-14px;padding-left:14px;padding-right:14px;padding-bottom:6px;position:sticky;top:0;background:var(--petrol-950);z-index:10;}
+    #tabs .nav-link{padding:10px 14px;font-size:.85rem;}
+    .card{border-radius:14px;}
+    .card.p-3{padding:14px!important;}
+    .stat-card .fs-3{font-size:1.35rem!important;}
+    .stat-card .small{font-size:.72rem;}
+    .btn{min-height:42px;}
+    .btn-group-sm>.btn{min-height:34px;}
+    .table{font-size:.82rem;}
+    .modal-dialog{margin:.6rem;}
+    .modal-body{max-height:70vh;overflow-y:auto;}
+    #loginScreen .card{max-width:100%;margin:0 16px;}
+    .row.g-4>.col-lg-4, .row.g-4>.col-lg-8, .row.g-4>.col-lg-6{margin-bottom:0;}
+  }
 </style>
 </head>
 <body>
@@ -133,10 +170,10 @@
   <!-- ================= DASHBOARD ================= -->
   <div class="tab-pane active" id="tab-dashboard">
     <div class="row g-3 mb-4">
-      <div class="col-md-3"><div class="card stat-card p-3"><div class="text-secondary small">Ingresos de hoy</div><div class="fs-3 fw-bold" id="totalHoy">$0.00</div></div></div>
-      <div class="col-md-3"><div class="card stat-card blue p-3"><div class="text-secondary small">Lavados de hoy</div><div class="fs-3 fw-bold" id="cantHoy">0</div></div></div>
-      <div class="col-md-3"><div class="card stat-card yellow p-3"><div class="text-secondary small">En proceso</div><div class="fs-3 fw-bold" id="enProceso">0</div></div></div>
-      <div class="col-md-3"><div class="card p-3 d-flex justify-content-center"><button class="btn btn-danger" onclick="abrirCierre()"><i class="fa-solid fa-lock me-1"></i>Cerrar caja</button></div></div>
+      <div class="col-6 col-md-3"><div class="card stat-card p-3"><div class="text-secondary small">Ingresos de hoy</div><div class="fs-3 fw-bold" id="totalHoy">$0.00</div></div></div>
+      <div class="col-6 col-md-3"><div class="card stat-card blue p-3"><div class="text-secondary small">Lavados de hoy</div><div class="fs-3 fw-bold" id="cantHoy">0</div></div></div>
+      <div class="col-6 col-md-3"><div class="card stat-card yellow p-3"><div class="text-secondary small">En proceso</div><div class="fs-3 fw-bold" id="enProceso">0</div></div></div>
+      <div class="col-6 col-md-3"><div class="card p-3 d-flex justify-content-center"><button class="btn btn-danger" onclick="abrirCierre()"><i class="fa-solid fa-lock me-1"></i>Cerrar caja</button></div></div>
     </div>
 
     <div class="row g-4">
@@ -192,9 +229,9 @@
 
       <div class="col-lg-8">
         <div class="card p-3">
-          <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="header-search mb-3">
             <h5 class="mb-0"><i class="fa-solid fa-list me-2"></i>Lavados de hoy</h5>
-            <input type="text" class="form-control form-control-sm w-auto" placeholder="Buscar placa o cliente..." id="buscador" oninput="renderDashboard()">
+            <input type="text" class="form-control form-control-sm" placeholder="Buscar placa o cliente..." id="buscador" oninput="renderDashboard()">
           </div>
           <div class="table-responsive">
             <table class="table table-hover align-middle">
@@ -210,9 +247,9 @@
   <!-- ================= CLIENTES ================= -->
   <div class="tab-pane" id="tab-clientes">
     <div class="card p-3">
-      <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="header-search mb-3">
         <h5 class="mb-0"><i class="fa-solid fa-users me-2"></i>Clientes registrados</h5>
-        <input type="text" class="form-control form-control-sm w-auto" placeholder="Buscar..." id="buscadorClientes" oninput="renderClientes()">
+        <input type="text" class="form-control form-control-sm" placeholder="Buscar..." id="buscadorClientes" oninput="renderClientes()">
       </div>
       <div class="table-responsive">
         <table class="table table-hover align-middle">
@@ -294,9 +331,9 @@
       </div>
     </div>
     <div class="row g-3 mb-4">
-      <div class="col-md-4"><div class="card stat-card p-3"><div class="text-secondary small">Ingresos del periodo</div><div class="fs-3 fw-bold" id="repIngresos">$0.00</div></div></div>
-      <div class="col-md-4"><div class="card stat-card purple p-3"><div class="text-secondary small">Servicio más vendido</div><div class="fs-5 fw-bold" id="repServicioTop">-</div></div></div>
-      <div class="col-md-4"><div class="card stat-card blue p-3"><div class="text-secondary small">Empleado más productivo</div><div class="fs-5 fw-bold" id="repEmpleadoTop">-</div></div></div>
+      <div class="col-6 col-md-4"><div class="card stat-card p-3"><div class="text-secondary small">Ingresos del periodo</div><div class="fs-3 fw-bold" id="repIngresos">$0.00</div></div></div>
+      <div class="col-6 col-md-4"><div class="card stat-card purple p-3"><div class="text-secondary small">Servicio más vendido</div><div class="fs-5 fw-bold" id="repServicioTop">-</div></div></div>
+      <div class="col-12 col-md-4"><div class="card stat-card blue p-3"><div class="text-secondary small">Empleado más productivo</div><div class="fs-5 fw-bold" id="repEmpleadoTop">-</div></div></div>
     </div>
     <div class="row g-4">
       <div class="col-lg-6">
