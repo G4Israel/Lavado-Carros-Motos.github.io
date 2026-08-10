@@ -1,0 +1,28 @@
+{
+  "name": "Lavado Carros & Motos",
+  "short_name": "Lavago",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#07262b",
+  "theme_color": "#0b333a",
+  "icons": [
+    {
+      "src": "lavago-metalico-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "lavago-metalico-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "lavago-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
